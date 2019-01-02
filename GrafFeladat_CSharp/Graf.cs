@@ -43,7 +43,7 @@ namespace GrafFeladat_CSharp
         /// </summary>
         /// <param name="cs1">Az él egyik pontja</param>
         /// <param name="cs2">Az él másik pontja</param>
-        public void Hozzaad(int cs1, int cs2)
+        public void Hozzaad(int cs1, int cs2, double suly)
         {
             if (cs1 < 0 || cs1 >= csucsokSzama ||
                 cs2 < 0 || cs2 >= csucsokSzama)
@@ -60,8 +60,8 @@ namespace GrafFeladat_CSharp
                 }
             }
 
-            elek.Add(new El(cs1, cs2));
-            elek.Add(new El(cs2, cs1));
+            elek.Add(new El(cs1, cs2, suly));
+            elek.Add(new El(cs2, cs1, suly));
         }
 
         public override string ToString()
@@ -77,6 +77,103 @@ namespace GrafFeladat_CSharp
                 str += el + "\n";
             }
             return str;
+        }
+
+        public void SzellessegiBejar(int kezdopont)
+        {
+            var bejart = new HashSet<int>();
+            var kovetkezok = new Queue<int>();
+            kovetkezok.Enqueue(kezdopont);
+            bejart.Add(kezdopont);
+            while (kovetkezok.Count !=0)
+            {
+                int k = kovetkezok.Dequeue();
+                Console.WriteLine(this.csucsok[k]);
+                foreach(var el in this.elek)
+                {
+                    if(el.Csucs1==k && !bejart.Contains(el.Csucs2))
+                    {
+                        kovetkezok.Enqueue(el.Csucs2);
+                        bejart.Add(el.Csucs2);
+                    }
+                }
+            }
+        }
+
+        public void MelysegiBejaras(int kezdopont)
+        {
+            var bejart = new HashSet<int>();
+            bejart.Add(kezdopont);
+            MelysegiBejarRecurziv(kezdopont, bejart);
+            
+        }
+
+        public void MelysegiBejarRecurziv(int k, HashSet<int> bejart)
+        {
+            Console.WriteLine(this.csucsok[k]);
+            foreach(var el in this.elek)
+            {
+                if(el.Csucs1==k && !bejart.Contains(el.Csucs2))
+                {
+                    bejart.Add(el.Csucs2);
+                    MelysegiBejarRecurziv(el.Csucs2, bejart);
+                }
+            }
+        }
+
+        //Dijkstra Algoritmus, legrövdebb út
+        public Dictionary<int, CsucsAdat> Dijkstra(int kezdopont)
+        {
+            var csucsAdatok = new Dictionary<int, CsucsAdat>();
+            for(int i = 0; i <=this.csucsokSzama -1; i++)
+            {
+                csucsAdatok.Add(i, new CsucsAdat());
+            }
+            csucsAdatok[kezdopont].koltseg = 0;
+            int vizsgaltDarab = 0;
+            while (vizsgaltDarab < csucsokSzama)
+            {
+                vizsgaltDarab++;
+                var vizsgaltCsucs = this.KovetkezoCsucs(csucsAdatok);
+                csucsAdatok[vizsgaltCsucs].vizsgaltuk = true;
+                var aktualisCsucs = vizsgaltCsucs;
+                foreach (var el in this.elek)
+                {
+                    if (el.Csucs1 == aktualisCsucs)
+                    {
+                        var ujKoltseg = csucsAdatok[vizsgaltCsucs].koltseg + el.Suly;
+                        if (ujKoltseg < csucsAdatok[el.Csucs2].koltseg)
+                        {
+                            csucsAdatok[el.Csucs2].koltseg = ujKoltseg;
+                            csucsAdatok[el.Csucs2].forrasCsucs = aktualisCsucs;
+                        }
+                    }
+                }
+            }
+            return csucsAdatok;
+        }
+
+        private int KovetkezoCsucs(Dictionary<int, CsucsAdat> csucsAdatok)
+        {
+            /*double min = int.MaxValue;
+            int minIndex = 0;
+            foreach(var adat in csucsAdatok)
+            {
+                if (adat.Value.vizsgaltuk == false && adat.Value.koltseg<min)
+                {
+                    min = adat.Value.koltseg;
+                    minIndex = adat.Key;
+                }
+            }  */
+            int minIndex = csucsAdatok.Count-1;
+            foreach(var adat in csucsAdatok)
+            {
+                if(adat.Value.vizsgaltuk==false && adat.Value.koltseg < csucsAdatok[minIndex].koltseg)
+                {
+                    minIndex = adat.Key;
+                }
+            }
+            return minIndex;
         }
     }
 }

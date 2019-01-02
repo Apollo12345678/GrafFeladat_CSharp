@@ -15,15 +15,18 @@
         /// </summary>
         public int Csucs2 { get; private set; }
 
+        public double Suly { get; private set; }
+
         /// <summary>
         /// Létrehoz egy úgy élt.
         /// </summary>
         /// <param name="csucs1">Az egyik csúcs indexe</param>
         /// <param name="csucs2">A másik csúcs indexe</param>
-        public El(int csucs1, int csucs2)
+        public El(int csucs1, int csucs2, double suly)
         {
             this.Csucs1 = csucs1;
             this.Csucs2 = csucs2;
+            this.Suly = suly;
         }
 
         public override string ToString()
